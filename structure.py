@@ -35,3 +35,6 @@ class Vehicule:
         self.masse = masse                     # Masse du véhicule
         self.largeur = largeur                 # Largeur du véhicule
         self.longueur = longueur               # Longueur du véhicule
+
+        #ddlkdkodlkelkf
+        #eeuyrtr
