@@ -28,6 +28,7 @@ class Vehicule:
                     ⟥---------⟤----------> x
                  (0,0)        larg
         """
+        
         self.nb_roue = nb_roue                 # Nombre de contact
         self.pos_roue = pos_roue               # Position des roues dans le repère local
         self.centre_gravite = centre_gravite   # Position du centre de gravtité dans le repère local
