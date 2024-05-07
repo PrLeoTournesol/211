@@ -1,15 +1,42 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 class Mur:
     """Créé un mur"""
 
-    def __init__(self, debut, fin, rayon_courbure = None) -> None:
+    def __init__(self, debut, fin) -> None:
         """Initialise le mur avec des coordonées début et fin"""
         self.debut = debut                     # Vecteur de position début du mur
         self.fin = fin                         # Vecteur de position fin du mur
 
-        self.x_points_mur = np.linspace(debut[0], fin[0], 1000)
-        self.y_points_mur = np.linspace(debut[1], fin[1], 1000)
+        self.x_points = np.linspace(debut[0], fin[0], 1000)
+        self.y_points = np.linspace(debut[1], fin[1], 1000)
+
+
+
+class Circuit:
+    """Créé un circuit"""
+
+    def __init__(self, mursInterieurs, mursExterieurs, ligneDepart, ligneArrivee) -> None:
+        self.mursInterieurs = []                        # Liste des mur intérieurs
+        self.mursExterieurs = []                        # Liste des mur extérieurs
+        for mur in mursInterieurs:
+            self.mursInterieurs.append(Mur(mur[0],mur[1]))
+        for mur in mursExterieurs:
+            self.mursExterieurs.append(Mur(mur[0],mur[1]))
+
+        self.depart=ligneDepart                         # 2 points définissant la ligne de départ
+        self.arrivee=ligneArrivee                       # 2 points définissant la ligne de départ
+
+    def affichage(self):
+        plt.figure()
+        for mur in self.mursInterieurs:
+            plt.plot(mur.x_points, mur.y_points, 'b-')
+        for mur in self.mursExterieurs:
+            plt.plot(mur.x_points, mur.y_points, 'r-')
+        plt.plot(self.depart[0], self.depart[1], 'b--')
+        plt.plot(self.arrivee[0], self.arrivee[1], 'g--')
+        plt.show()
 
 
 
@@ -84,7 +111,9 @@ moto = Moto(0.3, 0.5, 400, 1, 2, np.pi/3)
 print(moto.verification_glissement())
     
     
+circuit = Circuit([[(0,0),(1,1)],[(1,1),(2,5)]], [[(2,2),(3,3)],[(4,4),(3,6)]], [(1,2),(2,2)], [(3,2),(3,2)])
 
+circuit.affichage()
         
         
 
