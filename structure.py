@@ -36,5 +36,3 @@ class Vehicule:
         self.largeur = largeur                 # Largeur du véhicule
         self.longueur = longueur               # Longueur du véhicule
 
-        #ddlkdkodlkelkf
-        #eeuyrtretyvjugtujetg
