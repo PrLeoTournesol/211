@@ -44,7 +44,7 @@ class Circuit:
 class Moto:
     """Créé une moto"""
     
-    def __init__(self, rayon_roue, y_g, masse, empattement, vitesse = 0, braquage = 0) -> None:
+    def __init__(self, rayon_roue, y_g, masse, empattement, vitesse = 0, inclinaison = 0) -> None:
         """Initialise une voiture avec son repère local
                     y
                     ^
@@ -68,24 +68,56 @@ class Moto:
 
         # Paramètres dynamique
         self.vitesse = vitesse                      # Vitesse du centre de gravité   [m/s]
-        self.braquage_avant = braquage              # angle de braquage de la roue avant   [rad]
-        self.angle_rotation = np.tan(braquage) * y_g / empattement # Rotation dans le repère de la moto, lié au braquage  [rad]
+        self.vitesse_angle = 0                      # Vitesse angulaire de la moto dans le repère global  [rad/s]
+        self.angle = 0                              # Angle de rotation de la moto dans le repère global [rad]
+        self.rot_matrice = np.zeros((2,2))          # Matrice de rotation
+        self.position_moto = [0,0]                  # [xG,yG] dans le repère de la moto 
+
+        self.acceleration = 0                       # acceleration de la moto dans le repère de la moto [m/s2]
+        self.vitesse_inclinaison = 0                # vitesse de l'inclinaison de la moto [rad/s]
+        self.rayon_courbure = np.inf                # Rayon de courbure à un instant t (r = inf en ligne droite) [m]
+
+        self.inclinaison = inclinaison              # Inclinaison de la moto [rad]
         
-        self.position_moto = [0,0,0]                # [xG,yG,alpha_mot] avec alpha_mot angle entre la roue arrière et le repère global
+    
+    def calcul_rayon_courbure(self) -> float:
+        """
+        Calcul le rayon de courbure en connaissant la vitesse et l'angle d'inclinaison : 
+        http://albert25.free.fr/motard/physique_explications.html
+        """
+        if abs(self.inclinaison) > 1e-10:
+            self.rayon_courbure = self.vitesse**2 / (9.81 * np.tan(self.inclinaison))
+        else:
+            self.rayon_courbure = np.inf
 
-    def verification_glissement(self) -> bool:
-        """Vérifie qu'il n'y ai pas de glissement de la roue avant pour f (frottement roue sol)"""
-        f = 1
-        rayon_courbure = self.empattement / np.sin(self.braquage_avant)
-        force_centrifuge = self.masse * self.vitesse**2 / rayon_courbure
-        poids = self.masse * 9.81
-        force_normale_sol = (self.empattement - self.pos_centre_gravite)/self.empattement * poids     # Force normale sur la roue avant
+        return self.rayon_courbure
+    
+    def update_vitesse(self, dt) -> None:
+        self.vitesse = self.vitesse + dt * self.acceleration
 
-        force_frottement = f * force_normale_sol
-        print(force_centrifuge)
-        print(force_frottement)
+    def update_position(self, dt) -> None:
+        self.position_moto[1] = self.position_moto[1] + dt * self.vitesse
+    
+    def update_inclinaison(self, dt) -> None:
+        self.inclinaison = self.inclinaison + dt * self.vitesse_inclinaison
 
-        return force_centrifuge > force_frottement
+    def calcul_vitesse_angle(self) -> None:
+        if self.rayon_courbure < 1e10:
+            self.vitesse_angle = self.vitesse/self.rayon_courbure
+        else:
+            self.vitesse_angle = 0
+
+    def update_angle(self,dt):
+        self.angle = self.angle + dt * self.vitesse_angle
+
+    def calcul_rotation_matrice(self):
+        self.rot_matrice[0,0] = np.cos(self.angle)
+        self.rot_matrice[0,1] = np.sin(self.angle)
+        self.rot_matrice[1,0] = -np.sin(self.angle)
+        self.rot_matrice[1,1] = np.cos(self.angle)
+
+    def changement_repere(self, vecteur):
+        return self.rot_matrice @ vecteur
     
 
     @property
@@ -97,23 +129,26 @@ class Moto:
         self._vitesse = value
 
     @property
-    def braquage(self):
-        return self._braquage
+    def vitesse_inclinaison(self):
+        return self._vitesse_inclinaison
 
-    @braquage.setter
-    def braquage(self, value):
-        self._braquage = value
+    @vitesse_inclinaison.setter
+    def vitesse_inclinaison(self, value):
+        self._vitesse_inclinaison = value
 
+    @property
+    def acceleration(self):
+        return self._acceleration
 
+    @acceleration.setter
+    def acceleration(self, value):
+        self._acceleration = value
 
-moto = Moto(0.3, 0.5, 400, 1, 2, np.pi/3)
+    @property
+    def inclinaison(self):
+        return self._inclinaison
 
-print(moto.verification_glissement())
-    
-    
-circuit = Circuit([[(0,0),(1,1)],[(1,1),(2,5)]], [[(2,2),(3,3)],[(4,4),(3,6)]], [(1,2),(2,2)], [(3,2),(3,2)])
-
-circuit.affichage()
-        
-        
+    @inclinaison.setter
+    def inclinaison(self, value):
+        self._inclinaison = value
 
