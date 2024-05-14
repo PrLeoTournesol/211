@@ -7,7 +7,8 @@ class Circuit:
         self.mursExte = mursExterieurs
         self.Depart=ligneDepart
         self.Arrivee=ligneArrivee
-    def __affichage__(self):
+    
+    def affichage(self):
         plt.figure()
         for traceMur in self.mursInte:
             plt.plot(traceMur.debut,traceMur.fin,'b-')
@@ -19,7 +20,5 @@ class Circuit:
 
 circuit_test= Circuit([Mur((0,0),(0,1)), Mur((0,1),(1,1)), Mur((1,1),(1,0))], [Mur((-1,0),(-1,2)), Mur((-1,2),(2,2)), Mur((2,2),(2,0))],[(-1,0),(0,0)], [(1,0),(2,0)])
 
-plt.figure()
-plt.plot((1,1),(2,2))
-plt.show()
+circuit_test.affichage()
 
