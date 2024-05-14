@@ -16,3 +16,4 @@ class Circuit:
         plt.plot(self.Arrivee[0], self.Arrivee[1], 'g--')
         plt.show()
 
+#test2
