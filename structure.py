@@ -9,8 +9,8 @@ class Mur:
         self.debut = debut                     # Vecteur de position début du mur
         self.fin = fin                         # Vecteur de position fin du mur
 
-        self.x_points = np.linspace(debut[0], fin[0], 1000)
-        self.y_points = np.linspace(debut[1], fin[1], 1000)
+        self.x_points = [self.debut[0],self.fin[0]]
+        self.y_points = [self.debut[1],self.fin[1]]
 
 
 
