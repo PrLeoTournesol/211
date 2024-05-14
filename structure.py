@@ -15,30 +15,21 @@ class Mur:
 
 
 class Circuit:
-    """Créé un circuit"""
-
-    def __init__(self, mursInterieurs, mursExterieurs, ligneDepart, ligneArrivee) -> None:
-        self.mursInterieurs = []                        # Liste des mur intérieurs
-        self.mursExterieurs = []                        # Liste des mur extérieurs
-        for mur in mursInterieurs:
-            self.mursInterieurs.append(Mur(mur[0],mur[1]))
-        for mur in mursExterieurs:
-            self.mursExterieurs.append(Mur(mur[0],mur[1]))
-
-        self.depart=ligneDepart                         # 2 points définissant la ligne de départ
-        self.arrivee=ligneArrivee                       # 2 points définissant la ligne de départ
-
+    def __init__(self, mursInterieurs, mursExterieurs, ligneDepart, ligneArrivee)->None:
+        self.mursInte = mursInterieurs
+        self.mursExte = mursExterieurs
+        self.Depart=ligneDepart
+        self.Arrivee=ligneArrivee
+    
     def affichage(self):
         plt.figure()
-        for mur in self.mursInterieurs:
-            plt.plot(mur.x_points, mur.y_points, 'b-')
-        for mur in self.mursExterieurs:
-            plt.plot(mur.x_points, mur.y_points, 'r-')
-        plt.plot(self.depart[0], self.depart[1], 'b--')
-        plt.plot(self.arrivee[0], self.arrivee[1], 'g--')
+        for traceMur in self.mursInte:
+            plt.plot(traceMur.x_points,traceMur.y_points,'b-')
+        for traceMur in self.mursExte:
+            plt.plot(traceMur.x_points,traceMur.y_points, 'r-')
+        plt.plot([self.Depart[0][0],self.Depart[1][0]], [self.Depart[0][1],self.Depart[1][1]], 'b--')
+        plt.plot([self.Arrivee[0][0],self.Arrivee[1][0]], [self.Arrivee[0][1],self.Arrivee[1][1]], 'g--')
         plt.show()
-
-
 
 
 class Moto:
