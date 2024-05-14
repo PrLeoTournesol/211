@@ -1,12 +1,13 @@
 import matplotlib.pyplot as plt
+from structure import*
 
 class Circuit:
-    def _init_(self, mursInterieurs, mursExterieurs, ligneDepart, ligneArrivee)->None:
+    def __init__(self, mursInterieurs, mursExterieurs, ligneDepart, ligneArrivee)->None:
         self.mursInte = mursInterieurs
         self.mursExte = mursExterieurs
         self.Depart=ligneDepart
         self.Arrivee=ligneArrivee
-    def affichage(self):
+    def __affichage__(self):
         plt.figure()
         for traceMur in self.mursInte:
             plt.plot(traceMur.debut,traceMur.fin,'b-')
@@ -16,4 +17,9 @@ class Circuit:
         plt.plot(self.Arrivee[0], self.Arrivee[1], 'g--')
         plt.show()
 
-#test2
+circuit_test= Circuit([Mur((0,0),(0,1)), Mur((0,1),(1,1)), Mur((1,1),(1,0))], [Mur((-1,0),(-1,2)), Mur((-1,2),(2,2)), Mur((2,2),(2,0))],[(-1,0),(0,0)], [(1,0),(2,0)])
+
+plt.figure()
+plt.plot((1,1),(2,2))
+plt.show()
+

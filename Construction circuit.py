@@ -2,7 +2,7 @@ from structure import*
 import matplotlib.pyplot as plt
 
 class Circuit:
-    def __init__(self, mursInterieurs, murExterieurs, ligneDepart, ligneArrivee)->None:
+    def __init__(self, mursInterieurs, mursExterieurs, ligneDepart, ligneArrivee)->None:
         self.mursInte = mursInterieurs
         self.mursExte = mursExterieurs
         self.Depart=ligneDepart
