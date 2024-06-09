@@ -12,6 +12,9 @@ class Mur:
         self.x_points = [self.debut[0],self.fin[0]]
         self.y_points = [self.debut[1],self.fin[1]]
 
+        self.list_x = np.linspace(self.debut[0],self.fin[0], 20)
+        self.list_y = np.linspace(self.debut[1],self.fin[1], 20)
+
 
 
 class Circuit:
@@ -30,6 +33,16 @@ class Circuit:
         plt.plot([self.Depart[0][0],self.Depart[1][0]], [self.Depart[0][1],self.Depart[1][1]], 'b--')
         plt.plot([self.Arrivee[0][0],self.Arrivee[1][0]], [self.Arrivee[0][1],self.Arrivee[1][1]], 'g--')
         plt.show()
+
+    def verif_valide(self,coord):
+        x,y = coord
+
+        exterieur = ((x < min([min(mur.x_points) for mur in self.mursExte])) or (x > max([max(mur.x_points) for mur in self.mursExte]))) or (y < min([min(mur.y_points) for mur in self.mursExte])) or (y > max([max(mur.y_points) for mur in self.mursExte]))   
+        interieur = (x > min([min(mur.x_points) for mur in self.mursInte])) and (x < max([max(mur.x_points) for mur in self.mursInte])) and (y > min([min(mur.y_points) for mur in self.mursInte])) and (y < max([max(mur.y_points) for mur in self.mursInte]))
+        
+        if exterieur or interieur:
+            return True
+        return False
 
 
 class Moto:
@@ -62,7 +75,8 @@ class Moto:
         self.vitesse_angle = 0                      # Vitesse angulaire de la moto dans le repère global  [rad/s]
         self.angle = 0                              # Angle de rotation de la moto dans le repère global [rad]
         self.rot_matrice = np.zeros((2,2))          # Matrice de rotation
-        self.position_moto = [0,0]                  # [xG,yG] dans le repère de la moto 
+        self.position = pos_initiale               # [xG,yG] dans le repère de la moto 
+        self.distance_totale = 0                    # [xG,yG] dans le repère de la moto 
 
         self.acceleration = 0                       # acceleration de la moto dans le repère de la moto [m/s2]
         self.vitesse_inclinaison = 0                # vitesse de l'inclinaison de la moto [rad/s]
@@ -76,7 +90,7 @@ class Moto:
         Calcul le rayon de courbure en connaissant la vitesse et l'angle d'inclinaison : 
         http://albert25.free.fr/motard/physique_explications.html
         """
-        if abs(self.inclinaison) > 1e-10:
+        if abs(self.inclinaison) > 1e-2:
             self.rayon_courbure = self.vitesse**2 / (9.81 * np.tan(self.inclinaison))
         else:
             self.rayon_courbure = np.inf
@@ -87,13 +101,14 @@ class Moto:
         self.vitesse = self.vitesse + dt * self.acceleration
 
     def update_position(self, dt) -> None:
-        self.position_moto[1] = self.position_moto[1] + dt * self.vitesse
+        self.position[0] = self.position[0] + dt * (-np.sin(self.angle)) * self.vitesse
+        self.position[1] = self.position[1] + dt * (np.cos(self.angle)) * self.vitesse
     
     def update_inclinaison(self, dt) -> None:
         self.inclinaison = self.inclinaison + dt * self.vitesse_inclinaison
 
     def calcul_vitesse_angle(self) -> None:
-        if self.rayon_courbure < 1e10:
+        if self.rayon_courbure < 1e3:
             self.vitesse_angle = self.vitesse/self.rayon_courbure
         else:
             self.vitesse_angle = 0
@@ -103,13 +118,16 @@ class Moto:
 
     def calcul_rotation_matrice(self):
         self.rot_matrice[0,0] = np.cos(self.angle)
-        self.rot_matrice[0,1] = np.sin(self.angle)
-        self.rot_matrice[1,0] = -np.sin(self.angle)
+        self.rot_matrice[0,1] = -np.sin(self.angle)
+        self.rot_matrice[1,0] = np.sin(self.angle)
         self.rot_matrice[1,1] = np.cos(self.angle)
 
     def changement_repere(self, vecteur):
-        return self.rot_matrice @ vecteur
-    
+        return self.rot_matrice @ np.transpose(vecteur)
+
+    def distance_parcourue(self, pos, pos_avant):
+        self.distance_totale += ( (pos[0]-pos_avant[0])**2 + (pos[1]-pos_avant[1])**2 )**.5
+
 
     @property
     def vitesse(self):
@@ -136,10 +154,29 @@ class Moto:
         self._acceleration = value
 
     @property
+    def angle(self):
+        return self._angle
+
+    @angle.setter
+    def angle(self, value):
+        self._angle = value
+
+    @property
     def inclinaison(self):
         return self._inclinaison
 
     @inclinaison.setter
     def inclinaison(self, value):
         self._inclinaison = value
+
+    @property
+    def position(self):
+        return self._position
+
+    @position.setter
+    def position(self, liste):
+        if isinstance(liste, list):
+            self._position = liste
+
+
 
