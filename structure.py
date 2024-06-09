@@ -48,7 +48,7 @@ class Circuit:
 class Moto:
     """Créé une moto"""
     
-    def __init__(self, rayon_roue, y_g, masse, empattement, vitesse = 0, inclinaison = 0) -> None:
+    def __init__(self, rayon_roue, y_g, masse, empattement,pos_initiale, vitesse = 0, inclinaison = 0) -> None:
         """Initialise une moto avec son repère local
                     y
                     ^
