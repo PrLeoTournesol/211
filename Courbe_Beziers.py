@@ -52,12 +52,12 @@ P6 = [37,203]
 P7 = [42,175]
 P8 = [45,110]
 P9 = [47,20]
-points = courbe_bezier_3([P0,P1,P2,P3],50)
+points = courbe_bezier_3([P1,P2,P3,P4],50)
 plot_points(points,style='b.')
 plot_points(points,style='r-')
 
 
-points = courbe_bezier_3([P3,P4,P5,P6],50)
+points = courbe_bezier_3([P4,P5,P6,P7],50)
 plot_points(points,style='b.')
 plot_points(points,style='r-')
 
