@@ -48,7 +48,7 @@ class Circuit:
 class Moto:
     """Créé une moto"""
     
-    def __init__(self, rayon_roue, y_g, masse, empattement,pos_initiale, vitesse = 0, inclinaison = 0) -> None:
+    def __init__(self,pos_initiale, vitesse = 0, inclinaison = 0) -> None:
         """Initialise une moto avec son repère local
                     y
                     ^
@@ -64,12 +64,6 @@ class Moto:
                         (0,0)
         """
         
-        # Paramètres géométriques : 
-        self.rayon_roue = rayon_roue                # Rayon des roues  [m]
-        self.masse = masse                          # Masse du véhicule  [kg]
-        self.empattement = empattement              # Longueur du véhicule  [m]
-        self.pos_centre_gravite = y_g               # Position du centre de gravtité dans le repère local suivant y  [m]
-
         # Paramètres dynamique
         self.vitesse = vitesse                      # Vitesse du centre de gravité   [m/s]
         self.vitesse_angle = 0                      # Vitesse angulaire de la moto dans le repère global  [rad/s]

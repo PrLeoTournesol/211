@@ -11,12 +11,14 @@ murs_interieurs = [Mur((10,0),(10,190)), Mur((10,190),(40,190)), Mur((40,190),(4
 murs_exterieurs = [Mur((0,0),(0,220)), Mur((0,220),(50,220)), Mur((50,220),(50,0))]
 
 #######################################################################################
-# Création des points de la courbe squelette
+# Création des points de la courbe squelette 
 positions = [[1, 0], [3, 100], [6, 190], [10, 212], [15, 217],[31,210] , [38, 204], [42, 180], [45, 110], [46, 25]]
 x_positions = [i[0] for i in positions]
 y_positions = [i[1] for i in positions]
 
 
+#######################################################################################
+# Création de la courbe squelette par régression linéaire
 # Dénition des fonctions linéaires sur les intervals x1 x2 
 def fhat(x1,x2,x,y1,y2):
     return ((x2-x)/(x2-x1))*y1 + ((x-x1)/(x2-x1))*y2
@@ -59,7 +61,7 @@ image_par_fhat = np.vectorize(image_par_fhat)
 
 
 #######################################################################################
-# Courbes de Bezier
+# Création de la courbe squelette par courbes de Bezier
 
 def combinaison_lineaire(A,B,u,v):
     return [A[0]*u+B[0]*v,A[1]*u+B[1]*v]
@@ -117,16 +119,18 @@ def image_par_bezier(x):
 image_par_bezier = np.vectorize(image_par_bezier)
 
 
-#######################################################################################
-
-# Grandeurs initiales
+#######################################################################################################
+# Calcul de la trajectoire de manière discrète
+# Valeurs initiales
 v_0 = 30
 inclinaison_0 = 0
 pos_0 = [xhat[0],yhat[0]]
 angle_0 = 0
 
-moto = Moto(0.3, 0.5, 400, 2, pos_0, vitesse=v_0)
+moto = Moto(pos_0, vitesse=v_0)
 
+# A modifier pour travailler en fonction de la régression linéaire "image_par_fhat" ou des courbes de 
+# Bézier "image_par_bezier"
 fonction = image_par_fhat
 
 
@@ -138,17 +142,6 @@ def next_traj(t, inclinaison, angle_0, pos_0, moto):
     pas_inclinaison = 0.1
     limites_inclinaison = np.pi/2
     inclinaisons = np.arange(inclinaison - limites_inclinaison, inclinaison + limites_inclinaison, pas_inclinaison)
-
-####################################################################################################
-    # print('inclinaison envoyé : ', inclinaison)
-    # plt.figure()
-
-    # plt.scatter(range(len(inclinaisons)),inclinaisons)
-    # plt.title(inclinaison)
-    # plt.show()
-####################################################################################################
-
-
 
     moto.acceleration = 0
 
@@ -169,7 +162,7 @@ def next_traj(t, inclinaison, angle_0, pos_0, moto):
         y_calcs = [pos_0[1]]
 
         while current_time < t:
-
+            # Mise a jour des grandeurs dynamique
             moto.update_inclinaison(dt)
             moto.update_vitesse(dt)
             moto.update_position(dt)
@@ -193,22 +186,7 @@ def next_traj(t, inclinaison, angle_0, pos_0, moto):
                 inclinaison = (inclinaison+np.pi)
             resultats_trajs[inclinaison] = (x_calcs, y_calcs, angle_traj-np.pi/2)
 
-####################################################################################################
-    XXX =[]
-    YYY = []
-    for inclinaison in resultats_trajs.keys():
-        for lx in resultats_trajs[inclinaison][0]:
-            XXX.append(lx)
-        for ly in resultats_trajs[inclinaison][1]:
-            YYY.append(ly)
-    
-    #plt.figure()
 
-    #plt.scatter(x_positions,y_positions)
-    #plt.scatter(XXX,YYY)
-    #plt.plot(xhat,yhat,c='r')
-    #plt.show()
-####################################################################################################
         
     # Effectue la minimisation de l'angle de la trajectoire calculée
     resultats_critere = {}    # critère : (inclinaison_opti, x_calcs, y_calcs, angle_suivant)
@@ -245,7 +223,16 @@ def next_traj(t, inclinaison, angle_0, pos_0, moto):
 
 
 ##########################################################################################################
-    # print('inclinaison calcule : ', inclinaison_optimal)
+    # A décommenter pour observer chaque pas de calcul
+
+    # XXX = []
+    # YYY = []
+    # for inclinaison in resultats_trajs.keys():
+    #     for lx in resultats_trajs[inclinaison][0]:
+    #         XXX.append(lx)
+    #     for ly in resultats_trajs[inclinaison][1]:
+    #         YYY.append(ly)
+
     # plt.figure()
 
     # plt.scatter(x_positions,y_positions)
@@ -281,6 +268,8 @@ resultats = {}
 
 for t_simule in tqdm(t_simules):
 
+    # Valeurs initiales
+
     inclinaison_opts = [inclinaison_0]
     x_opts = [pos_0[0]]
     y_opts = [pos_0[1]]
@@ -298,6 +287,7 @@ for t_simule in tqdm(t_simules):
         angles.append(angle)
         t_total.append(t_total[-1]+t_simule)
 
+    # Calcul de la trajectoire la plus proche de celle voulue
     # Critère des moindres carrés
     y_s = fonction(x_opts)
     md = 0  
@@ -316,6 +306,8 @@ for t_simule in tqdm(t_simules):
 
 
 ######################################################################################################################
+    # A décommenter pour afficher les trajectoires pour chaque pas de temps
+
     # plt.figure()
     # for mur in murs_interieurs:
     #     plt.plot(mur.x_points,mur.y_points,'g')
@@ -349,10 +341,10 @@ x_opts, y_opts, inclinaison_opts, t_simu, t_total = resultats[min(resultats.keys
 
 
 
-
+# Essai d'une simulation en imposant les angles d'inclinaison précédents
 
 ############################################################################################################
-# A trier plus tard
+# Fit et filtre les résultats de la simulation 
 
 temps = np.linspace(0,30, len(x_opts))
 
@@ -364,20 +356,12 @@ fitting_y = np.polyfit(temps, y_opts ,15)
 function_y = np.poly1d(fitting_y)
 
 
-
-
-fitting_inclin = np.polyfit(t_total, inclinaison_opts ,6) 
-function_inclin = np.poly1d(fitting_inclin)
-
 ################################################################################################################
-
+# Permet de filter l'angle d'inclinaison sur plusieurs zones en fonction des paramètres de simulation
 # Pour v0 = 30 et t_simu = 0.3 ; régression linéiare
 
 A = 21
 B = 13
-
-from scipy.interpolate import CubicSpline
-function_inclin = CubicSpline(t_total,inclinaison_opts)
 
 inclinaisons1 = inclinaison_opts[:A]
 t1 = t_total[:len(inclinaisons1)]
@@ -391,14 +375,11 @@ f2 = np.poly1d(np.polyfit(t2, inclinaisons2, 4))
 f3 = np.poly1d(np.polyfit(t3, inclinaisons3, 1))
 
 ################################################################################################################
+# Permet de filter l'angle d'inclinaison sur plusieurs zones en fonction des paramètres de simulation
 # Pour v0 = 30 et t_simu = 0.3 ; approximation de Bézier
 
 # A = 15      # Nombre de point dans la première zone d'approximation
 # B = 13      # Nombre de point dans la première zone d'approximation
-
-# print(B)
-# from scipy.interpolate import CubicSpline
-# function_inclin = CubicSpline(t_total,inclinaison_opts)
 
 # inclinaisons1 = inclinaison_opts[:A]
 # t1 = t_total[:len(inclinaisons1)]
@@ -411,9 +392,9 @@ f3 = np.poly1d(np.polyfit(t3, inclinaisons3, 1))
 # f2 = np.poly1d(np.polyfit(t2, inclinaisons2, 4))
 # f3 = np.poly1d(np.polyfit(t3, inclinaisons3, 1))
 
+
 ################################################################################################################""
-
-
+# Effectue la simulation finale
 
 current_time = 0
 dt = 0.1
@@ -433,12 +414,8 @@ while (x_reele[-1] < 40 or y_reele[-1] >= 0) and current_time < 16:
     pos = moto.position
 
     moto.acceleration = 0
-    
-    # for i in range(len(t_total) - 1):
-    #     if t_total[i] <= current_time < t_total[i+1]:
-    #         moto.inclinaison = inclinaison_opts[i]
 
-
+    # Affecte l'angle d'inclinaison en fonction de la zone temporelle
     if current_time <= t1[-1]:
         moto.inclinaison = f1(current_time)
     elif t1[-1] < current_time <= t2[-1]:
@@ -446,12 +423,7 @@ while (x_reele[-1] < 40 or y_reele[-1] >= 0) and current_time < 16:
     else:
         moto.inclinaison = f3(current_time)
 
-    #moto.inclinaison = function_inclin(current_time)
 
-
-    # previous_time = current_time
-    # current_time = time.time() - init_time
-    # dt = current_time-previous_time
     
     x_reele.append(pos[0])
     y_reele.append(pos[1])
@@ -470,10 +442,10 @@ while (x_reele[-1] < 40 or y_reele[-1] >= 0) and current_time < 16:
 
 
 
+# Affichage des résultats
+###############################################################################################################
 
-
-
-
+# Affiche la trajectoire optimale, le circuit et la courbe squelette
 plt.figure()
 for mur in murs_interieurs:
     plt.plot(mur.x_points,mur.y_points,'g')
@@ -481,17 +453,20 @@ for mur in murs_exterieurs:
     plt.plot(mur.x_points,mur.y_points,'c')
 
 plt.scatter(x_positions,y_positions)
-plt.plot(x_bezier,y_bezier,c='r')
+if fonction == image_par_bezier:
+    plt.plot(x_bezier,y_bezier,c='r')
+else :
+    plt.plot(xhat,yhat,c='r')
 
 plt.scatter(x_opts,y_opts[:len(x_opts)], c='k')
 plt.xlabel('x (m)')
 plt.ylabel('y (m)')
-plt.title('Trajectoire totale')
-# plt.title(t_simu)
+plt.title('Trajectoire totale pour un pas de ' + str(t_simu))
 
+
+# Affiche l'angle d'inclinaison et le filtrage
 plt.figure()
 plt.plot(t_total,inclinaison_opts)
-plt.plot(t_total,function_inclin(t_total), 'k')
 plt.plot(t1,f1(t1))
 plt.plot(t2,f2(t2))
 plt.plot(t3,f3(t3))
@@ -499,25 +474,23 @@ plt.title('Angle beta')
 plt.xlabel('t (s)')
 plt.ylabel('beta (rad)')
 
+# Affiche la position en x au cours du temps et son approximation polynomiale
 plt.figure()
 plt.plot(temps,x_opts)
 plt.plot(temps,function_x(temps))
 plt.title('x')
+plt.xlabel('t (s)')
+plt.ylabel('x (m)')
 
+# Affiche la position en y au cours du temps et son approximation polynomiale
 plt.figure()
 plt.plot(temps,y_opts)
 plt.plot(temps,function_y(temps))
 plt.title('y')
+plt.xlabel('t (s)')
+plt.ylabel('y (m)')
 
-plt.figure()
-for mur in murs_interieurs:
-    plt.plot(mur.x_points,mur.y_points,'g')
-for mur in murs_exterieurs:
-    plt.plot(mur.x_points,mur.y_points,'c')
-plt.plot(function_x(temps),function_y(temps))
-plt.title('Traj')
-
-
+# Affiche la trajectoire de la simulation finale
 plt.figure()
 for mur in murs_interieurs:
     plt.plot(mur.x_points,mur.y_points,'g')
@@ -530,76 +503,3 @@ plt.ylabel('y (m)')
 
 
 plt.show()
-
-
-
-
-
-
-liste_PointOpt=[]
-for i in range(len(x_opts)):
-    if i%40==0:
-        liste_PointOpt.append([x_opts[i], y_opts[i]])    
-    
-
-def plot_points(points_courbe,style='-'):
-    x = []
-    y = []
-    for p in points_courbe:
-        x.append(p[0])
-        y.append(p[1])
-    plt.plot(x,y,style)
-    
-def combinaison_lineaire(A,B,u,v):
-    return [A[0]*u+B[0]*v,A[1]*u+B[1]*v]
-
-def interpolation_lineaire(A,B,t):
-    return combinaison_lineaire(A,B,t,1-t)
-
-def reduction(points_control,t):
-    points_sortie=[]
-    N = len(points_control)
-    for i in range(N-1):
-        points_sortie.append(interpolation_lineaire(points_control[i],points_control[i+1],1-t))
-    return points_sortie
-
-def point_bezier_n(points_control,t):
-    n = len(points_control)
-    while n > 1:
-        points_control = reduction(points_control,t)
-        n = len(points_control)
-    return points_control[0]
-
-def courbe_bezier_n(points_control,N):
-    n = len(points_control)
-    dt = 1.0/N
-    t = dt
-    points_courbe = [points_control[0]]
-    while t < 1.0:
-        points_courbe.append(point_bezier_n(points_control,t))
-        t += dt
-    points_courbe.append(points_control[n-1])
-    return points_courbe
-
-plt.figure()
-A=courbe_bezier_n(liste_PointOpt,100)
-plot_points(A,style='r-')
-plot_points(liste_PointOpt, style='b')
-plt.scatter(A[0],A[1])
-plt.grid()
-
-X_bez=[]
-Y_bez=[]
-
-for i in A:
-    X_bez.append(i[0])
-    Y_bez.append(i[1])
-
-plt.figure()
-for mur in murs_interieurs:
-    plt.plot(mur.x_points,mur.y_points,'g')
-for mur in murs_exterieurs:
-    plt.plot(mur.x_points,mur.y_points,'c')
-plt.plot(X_bez,Y_bez)
-plt.title('Traj')
-#plt.show()

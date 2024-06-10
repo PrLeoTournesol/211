@@ -124,3 +124,75 @@ plot_points(positions,style='b-')
 plt.grid()
 
 plt.show()
+
+
+
+
+
+liste_PointOpt=[]
+for i in range(len(x_opts)):
+    if i%40==0:
+        liste_PointOpt.append([x_opts[i], y_opts[i]])    
+    
+
+def plot_points(points_courbe,style='-'):
+    x = []
+    y = []
+    for p in points_courbe:
+        x.append(p[0])
+        y.append(p[1])
+    plt.plot(x,y,style)
+    
+def combinaison_lineaire(A,B,u,v):
+    return [A[0]*u+B[0]*v,A[1]*u+B[1]*v]
+
+def interpolation_lineaire(A,B,t):
+    return combinaison_lineaire(A,B,t,1-t)
+
+def reduction(points_control,t):
+    points_sortie=[]
+    N = len(points_control)
+    for i in range(N-1):
+        points_sortie.append(interpolation_lineaire(points_control[i],points_control[i+1],1-t))
+    return points_sortie
+
+def point_bezier_n(points_control,t):
+    n = len(points_control)
+    while n > 1:
+        points_control = reduction(points_control,t)
+        n = len(points_control)
+    return points_control[0]
+
+def courbe_bezier_n(points_control,N):
+    n = len(points_control)
+    dt = 1.0/N
+    t = dt
+    points_courbe = [points_control[0]]
+    while t < 1.0:
+        points_courbe.append(point_bezier_n(points_control,t))
+        t += dt
+    points_courbe.append(points_control[n-1])
+    return points_courbe
+
+plt.figure()
+A=courbe_bezier_n(liste_PointOpt,100)
+plot_points(A,style='r-')
+plot_points(liste_PointOpt, style='b')
+plt.scatter(A[0],A[1])
+plt.grid()
+
+X_bez=[]
+Y_bez=[]
+
+for i in A:
+    X_bez.append(i[0])
+    Y_bez.append(i[1])
+
+plt.figure()
+for mur in murs_interieurs:
+    plt.plot(mur.x_points,mur.y_points,'g')
+for mur in murs_exterieurs:
+    plt.plot(mur.x_points,mur.y_points,'c')
+plt.plot(X_bez,Y_bez)
+plt.title('Traj')
+#plt.show()
